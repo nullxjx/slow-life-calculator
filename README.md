@@ -6,6 +6,8 @@
 
 https://nullxjx.github.io/slow-life-calculator/
 
+页面右上角提供 GitHub 源码入口，点击后在新窗口打开本仓库；手机端同样可见。
+
 ## 本地使用
 
 需要 Node.js 18+ 运行模型测试、Python 3 启动本地预览；线上无需这些环境。无第三方运行依赖，无需安装或构建。
