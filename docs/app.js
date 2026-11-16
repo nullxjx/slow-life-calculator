@@ -27,7 +27,7 @@ function readState(){
 }
 function renderChart(base){
   const points=base.trajectory;
-  const W=620,H=208,left=47,right=17,top=16,bottom=31;
+  const W=Math.max(280,Math.round($('#chart').getBoundingClientRect().width)||620),H=208,left=47,right=17,top=16,bottom=31;
   const max=Math.max(...points.map(p=>p[chartMode]),1);
   const nice=Math.ceil(max/10000/4)*10000*4||40000;
   const x=i=>left+(W-left-right)*i/(points.length-1),y=v=>H-bottom-(H-top-bottom)*v/nice;
@@ -35,7 +35,9 @@ function renderChart(base){
   let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="presentation"><defs><linearGradient id="fade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#a8bd88" stop-opacity=".36"/><stop offset="1" stop-color="#d9e5c8" stop-opacity=".12"/></linearGradient></defs>`;
   for(let i=0;i<=4;i++){const v=nice*i/4,Y=y(v);svg+=`<line x1="${left}" x2="${W-right}" y1="${Y}" y2="${Y}" stroke="#e9ecdf" stroke-dasharray="3 5"/><text x="${left-9}" y="${Y+3}" text-anchor="end">${Math.round(v/10000)}万</text>`;}
   svg+=`<path d="${path} L${x(points.length-1)},${H-bottom} L${left},${H-bottom} Z" fill="url(#fade)"/><path d="${path}" fill="none" stroke="#62824f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
-  const ticks=[0,...Array.from({length:Math.floor((base.s.endAge-base.s.age)/10)},(_,i)=>(i+1)*10).filter(i=>i<points.length-4),points.length-1];
+  const step=W<420?20:10;
+  const tickGap=Math.ceil(55/((W-left-right)/(points.length-1)));
+  const ticks=[0,...Array.from({length:Math.floor((base.s.endAge-base.s.age)/step)},(_,i)=>(i+1)*step).filter(i=>i<(points.length-1)-tickGap),points.length-1];
   for(const i of ticks) svg+=`<text x="${x(i)}" y="${H-8}" text-anchor="${i===0?'start':i===points.length-1?'end':'middle'}">${points[i].age}岁</text>`;
   for(let i=0;i<points.length;i++) svg+=`<circle cx="${x(i)}" cy="${y(points[i][chartMode])}" r="6" fill="transparent"><title>${points[i].age}岁：${chartMode==='real'?'今天购买力':'账面余额'}约 ${wan(points[i][chartMode])} 万元</title></circle>`;
   svg+='</svg>';
@@ -115,3 +117,5 @@ $('#export').addEventListener('click',()=>{
 });
 for(const [key,value] of Object.entries(defaults)){const el=form.elements.namedItem(key);if(el)el.value=value??'';}
 update();
+
+window.addEventListener('resize',()=>{if(current)renderChart(current.base);});
