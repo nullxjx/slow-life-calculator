@@ -12,8 +12,8 @@ export const cities = {
 };
 export const defaults = {
   city:'杭州', age:30, adults:1, housing:'rent', children:'none', childAges:'5', lifestyle:'standard',
-  endAge:95, inflation:2, rate:1, medicalInflation:3, rentInflation:2, monthlyLiving:null,
-  monthlyHousing:null, mortgage:4000, mortgageYears:20, birthAfter:3, education:'public',
+  endAge:85, inflation:2, rate:1, medicalInflation:3, rentInflation:2, monthlyLiving:null,
+  monthlyHousing:null, mortgage:4000, mortgageYears:20, education:'public',
   medicalBase:2000, insurance:1200, reservePerAdult:100000, pension:0, pensionAge:65,
   income:0, incomeYears:10, parentSupport:0, careAnnual:18000
 };
@@ -24,14 +24,16 @@ const finite = (n, min, max, label) => {
 export function normalize(input={}) {
   const s={...defaults,...input};
   if (!cities[s.city]) throw new Error('请选择支持的城市');
-  const ranges={age:[18,85,'年龄'],adults:[1,2,'成人数'],endAge:[19,110,'规划年龄'],inflation:[0,10,'通胀率'],rate:[0,8,'年利率'],medicalInflation:[0,12,'医疗涨幅'],rentInflation:[0,10,'租金涨幅'],mortgage:[0,100000,'月供'],mortgageYears:[0,40,'剩余还款年数'],birthAfter:[0,15,'生育时间'],medicalBase:[0,100000,'医疗自付'],insurance:[0,100000,'医保及保险预算'],reservePerAdult:[0,2000000,'应急医疗储备'],pension:[0,50000,'养老金'],pensionAge:[40,85,'养老金起领年龄'],income:[0,100000,'其他收入'],incomeYears:[0,92,'收入持续年数'],parentSupport:[0,100000,'每月赡养费'],careAnnual:[0,500000,'高龄照护预算']};
+  const ranges={age:[18,85,'年龄'],adults:[1,2,'成人数'],endAge:[19,110,'规划年龄'],inflation:[0,10,'通胀率'],rate:[0,8,'年利率'],medicalInflation:[0,12,'医疗涨幅'],rentInflation:[0,10,'租金涨幅'],mortgage:[0,100000,'月供'],mortgageYears:[0,40,'剩余还款年数'],medicalBase:[0,100000,'医疗自付'],insurance:[0,100000,'医保及保险预算'],reservePerAdult:[0,2000000,'应急医疗储备'],pension:[0,50000,'养老金'],pensionAge:[40,85,'养老金起领年龄'],income:[0,100000,'其他收入'],incomeYears:[0,92,'收入持续年数'],parentSupport:[0,100000,'每月赡养费'],careAnnual:[0,500000,'高龄照护预算']};
   for(const [key,[min,max,label]] of Object.entries(ranges)) s[key]=finite(s[key],min,max,label);
   if(!Number.isInteger(s.age)||!Number.isInteger(s.endAge)||!Number.isInteger(s.adults)) throw new Error('年龄与成人数请使用整数');
   if(s.endAge<=s.age) throw new Error('规划年龄必须大于当前年龄');
-  for(const key of ['mortgageYears','birthAfter','pensionAge','incomeYears']) if(!Number.isInteger(s[key])) throw new Error('年数和年龄请使用整数');
+  for(const key of ['mortgageYears','pensionAge','incomeYears']) if(!Number.isInteger(s[key])) throw new Error('年数和年龄请使用整数');
   const enums={housing:['rent','own','mortgage'],children:['none','plan1','plan2','existing'],lifestyle:['lean','standard','comfortable'],education:['public','enriched','private']};
   for(const [key,values] of Object.entries(enums)) if(!values.includes(s[key])) throw new Error('选项无效');
   for(const key of ['monthlyLiving','monthlyHousing']) if(s[key]!==null) s[key]=finite(s[key],0,100000,'月度预算');
+  // 首胎时间是自动假设，不接收独立输入；超过35岁按当年开始，避免倒算已发生费用。
+  s.birthAfter=s.children.startsWith('plan')?Math.max(0,35-s.age):null;
   s.kids=[];
   if(s.children==='existing') {
     const ages=String(s.childAges).trim().split(/[,，\s]+/);

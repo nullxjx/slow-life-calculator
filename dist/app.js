@@ -9,8 +9,9 @@ const money=n=>Math.round(n).toLocaleString('zh-CN');
 const wan=n=>(n/10000).toLocaleString('zh-CN',{maximumFractionDigits:1});
 function syncConditional(){
   const housing=form.elements.housing.value, children=form.elements.children.value;
-  const groups=[['#mortgage-fields',housing==='mortgage'],['#existing-fields',children==='existing'],['#birth-fields',children.startsWith('plan')]];
+  const groups=[['#mortgage-fields',housing==='mortgage'],['#existing-fields',children==='existing']];
   for(const [id,visible] of groups){const element=$(id);element.hidden=!visible;for(const input of element.querySelectorAll('input'))input.disabled=!visible;}
+  $('#birth-note').hidden=!children.startsWith('plan');
   $('#housing-label').textContent=housing==='rent'?'全家月租金（元）':'全家月物业 / 维修费（元）';
   $('#housing-hint').textContent=housing==='rent'?'两人或有孩子时适度增加面积':'不含月供；有房贷时单独填写月供';
   for(const group of document.querySelectorAll('[data-for]'))for(const button of group.querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.value===form.elements[group.dataset.for].value));
@@ -53,6 +54,7 @@ function render(base,pressure){
   $('#reserve').textContent=`${wan(base.reserve)} 万`;
   $('#stress').textContent=`${Math.ceil(pressure.total/10000).toLocaleString('zh-CN')} 万`;
   const kidLabel=s.kids.length?` · ${s.kids.length} 个${s.children.startsWith('plan')?'计划中的':''}孩子`:'';
+  $('#horizon-note').textContent=`允许逐年消耗本金；只算到 ${s.endAge} 岁，此后开支未计入，非终身保障。`;
   $('#result-context').textContent=`从 ${s.age} 岁到 ${s.endAge} 岁，${s.endAge-s.age} 年的生活${kidLabel}。金额为全家合计。`;
   const real=(1+s.rate/100)/(1+s.inflation/100)-1;
   $('#rate-warning').textContent=`按年利率 ${s.rate}%、生活通胀 ${s.inflation}% 估算，实际利率约 ${(real*100).toFixed(2)}%。${real<0?'利息跑不赢物价，需要把未来涨价也存下来。':'利率是长期假设，未来实际水平仍会变化。'}`;
@@ -105,10 +107,13 @@ $('#reset').addEventListener('click',()=>{
 $('#export').addEventListener('click',()=>{
   if(!current)return;
   const {base,pressure}=current;
-  const names={city:'城市',age:'当前年龄',adults:'成人数',housing:'住房类型',children:'孩子计划',childAges:'已有孩子年龄',lifestyle:'生活档位',endAge:'规划终点年龄',inflation:'生活年通胀%',rate:'名义年利率%',medicalInflation:'医疗年涨幅%',rentInflation:'租金年涨幅%',monthlyLiving:'自填全家月生活费',monthlyHousing:'自填全家月住房费',mortgage:'月供',mortgageYears:'剩余还贷年数',birthAfter:'几年后生育',education:'教育路线',medicalBase:'每人年医疗自付基础',insurance:'每人年医保保险预算',reservePerAdult:'每人应急医疗储备',pension:'全家月养老金',pensionAge:'养老金起领年龄',income:'全家月其他净收入',incomeYears:'其他收入年数',parentSupport:'每月赡养预算',careAnnual:'高龄每人年照护'};
+  const names={city:'城市',age:'当前年龄',adults:'成人数',housing:'住房类型',children:'孩子计划',childAges:'已有孩子年龄',lifestyle:'生活档位',endAge:'规划终点年龄',inflation:'生活年通胀%',rate:'名义年利率%',medicalInflation:'医疗年涨幅%',rentInflation:'租金年涨幅%',monthlyLiving:'自填全家月生活费',monthlyHousing:'自填全家月住房费',mortgage:'月供',mortgageYears:'剩余还贷年数',birthAfter:'首胎距今年数（自动推算）',education:'教育路线',medicalBase:'每人年医疗自付基础',insurance:'每人年医保保险预算',reservePerAdult:'每人应急医疗储备',pension:'全家月养老金',pensionAge:'养老金起领年龄',income:'全家月其他净收入',incomeYears:'其他收入年数',parentSupport:'每月赡养预算',careAnnual:'高龄每人年照护'};
   const labels={rent:'租房',own:'有房无贷',mortgage:'还房贷',none:'无子女',plan1:'计划1个孩子',plan2:'计划2个孩子',existing:'已有孩子',lean:'简简单单',standard:'舒服就好',comfortable:'自在一点',public:'公立为主',enriched:'更多课外投入',private:'民办/国际'};
-  const rows=[['松弛有数 · 测算快照'],['提示','规划情景，非投资建议；城市费用为假设，非实时行情。'],['计费口径','每年年初支出，剩余资金按年计息；终点允许日常本金耗尽；应急储备独立留存。'],['基础所需本金（元）',Math.ceil(base.total)],['压力情景所需本金（元）',Math.ceil(pressure.total)],['压力情景说明','生活/租金/医疗涨幅各+1个百分点；利率-0.5个百分点（最低0）'],['日常所需本金（元）',Math.ceil(base.capital)],['独立储备（元）',Math.ceil(base.reserve)],[],['输入参数','数值']];
-  for(const [key,label] of Object.entries(names))rows.push([label,base.s[key]===null?'城市自动估算':labels[base.s[key]]??base.s[key]]);
+  const rows=[['松弛有数 · 测算快照'],['提示','规划情景，非投资建议；城市费用为假设，非实时行情。'],['计费口径','每年年初支出，剩余资金按年计息；终点允许日常本金耗尽；应急储备独立留存。'],['基础所需本金（元）',Math.ceil(base.total)],['压力情景所需本金（元）',Math.ceil(pressure.total)],['压力情景说明','生活/租金/医疗涨幅各+1个百分点；利率-0.5个百分点（最低0）'],['日常所需本金（元）',Math.ceil(base.capital)],['独立储备（元）',Math.ceil(base.reserve)],[],['参数与自动假设','数值']];
+  for(const [key,label] of Object.entries(names)){
+    if(key==='birthAfter'&&!base.s.children.startsWith('plan'))continue;
+    rows.push([label,base.s[key]===null?'城市自动估算':labels[base.s[key]]??base.s[key]]);
+  }
   rows.push(['估算全家月生活费',Math.round(base.livingMonthly)],['估算全家月租金/物业维修费（不含月供）',Math.round(base.housingMonthly)],[],['年龄','生活','住房','医疗','养育','教育','生育','照护','赡养','总支出','设定收入','需资产补足','年末日常余额（名义元，不含储备）']);
   for(const [i,r] of base.rows.entries())rows.push([r.age,...Object.values(r.parts).map(Math.round),Math.round(r.gross),Math.round(r.income),Math.round(r.net),Math.round(base.trajectory[i+1].balance)]);
   const csv='\uFEFF'+rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\r\n');
