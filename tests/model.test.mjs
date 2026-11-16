@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculate,evaluate,makeSchedule} from '../dist/model.js';
+const near=(a,b)=>assert.ok(Math.abs(a-b)<.01,`${a} != ${b}`);
+test('零利率零通胀时，本金等于逐年支出之和',()=>{const r=calculate({age:30,endAge:40,rate:0,inflation:0,medicalInflation:0,rentInflation:0});near(r.capital,r.rows.reduce((a,r)=>a+r.net,0));near(r.trajectory.at(-1).balance,0);});
+test('年初支付口径与逐年余额闭合，储备不重复参与消费',()=>{const r=calculate();near(r.trajectory.at(-1).balance,0);near(r.total,r.capital+r.cashReserve+r.medicalReserve);near(Object.values(r.pvParts).reduce((a,b)=>a+b,0)-r.incomePV,r.capital);});
+test('租房比无贷自住房所需本金高，按揭到期停止',()=>{assert.ok(calculate({housing:'rent'}).total>calculate({housing:'own'}).total);const r=makeSchedule({housing:'mortgage',mortgage:4000,mortgageYears:2,inflation:0});near(r.rows[1].parts.住房-r.rows[2].parts.住房,48000);});
+test('未来生育按时间计费且22岁后停止，两个孩子间隔3年',()=>{const r=makeSchedule({children:'plan2',birthAfter:3});assert.equal(r.rows[0].parts.养育,0);assert.ok(r.rows[3].parts.生育>0);assert.ok(r.rows[6].parts.生育>0);assert.equal(r.rows[7].parts.生育,0);assert.equal(r.rows[31].parts.养育,0);assert.ok(calculate({children:'plan1'}).total>calculate().total);});
+test('已有孩子不重复计生育费，大学之后停止教育',()=>{const r=makeSchedule({children:'existing',childAges:'18，5'});assert.equal(r.rows[0].parts.生育,0);assert.equal(r.rows[17].parts.教育,0);});
+test('通胀增加、利率下降、期限延长与压力情景都提高资金要求',()=>{const r=calculate();assert.ok(calculate({inflation:3}).total>r.total);assert.ok(calculate({rate:0}).total>r.total);assert.ok(calculate({endAge:100}).total>r.total);assert.ok(evaluate().pressure.total>r.total);});
+test('养老金仅从起领年龄开始；超额收入不被重复用作资产',()=>{const r=makeSchedule({age:60,endAge:70,pension:3000,pensionAge:65});assert.equal(r.rows[4].income,0);assert.equal(r.rows[5].income,36000);const rich=calculate({income:100000,incomeYears:92});near(rich.capital,0);assert.ok(rich.reserve>0);});
+test('高龄医疗与照护增加且家庭医疗按成人数计算',()=>{const r=makeSchedule({age:74,endAge:82,medicalInflation:0,inflation:0});assert.ok(r.rows[1].parts.医疗>r.rows[0].parts.医疗);assert.ok(r.rows[6].parts.照护>0);near(makeSchedule({adults:2}).rows[0].parts.医疗,makeSchedule().rows[0].parts.医疗*2);});
+test('错误、空值、无穷、超范围与终点年龄输入被拒绝',()=>{for(const v of [{age:NaN},{age:''},{rate:Infinity},{endAge:30},{age:30.5},{city:'不存在'},{children:'existing',childAges:''},{children:'existing',childAges:'3.5'},{inflation:-1},{monthlyLiving:-1}])assert.throws(()=>calculate(v));});

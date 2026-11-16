@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#264b3d"><meta name="description" content="选择一座城市，算算把时间还给自己需要多少钱。极简输入，考虑住房、医疗、养育教育、通胀与存款利率的长期生活预算工具。">
+<title>松弛有数 · 躺平生活计算器</title><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="site-header wrap">
+  <a class="brand" href="./" aria-label="松弛有数首页"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28V15M16 19C5 20 4 8 5 4c9 0 13 7 11 15ZM16 25c0-11 6-16 13-16 0 10-4 16-13 16Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>松弛有数<span class="brand-dot">.</span></span></a>
+  <nav aria-label="页面导航"><a href="#method">怎么算的 <span aria-hidden="true">↗</span></a><span class="privacy"><span></span>数据只在你的浏览器里</span></nav>
+</header>
+<main class="wrap">
+<section class="hero">
+  <div><p class="eyebrow">给另一种生活，算一笔明白账</p><h1>把日子，<br class="mobile-break">过回<span>自己。</span></h1><p class="hero-sub">不必成为富翁，也可以先知道自由的价格。<br>选一座城市，看看不再为生计工作，需要多少底气。</p><div class="hero-tags"><span>住房与生活</span><i>·</i><span>医疗与养老</span><i>·</i><span>孩子与教育</span><i>·</i><span>通胀与利息</span></div></div>
+  <div class="hero-art" aria-hidden="true"><svg viewBox="0 0 350 185" fill="none"><circle cx="237" cy="53" r="32" fill="#e9bf73"/><path d="M10 151c62-60 115-83 179-23 47-65 97-49 150 14v39H10Z" fill="#dce3d6"/><path d="M0 173c65-43 105-38 160-12 58-37 121-14 190 9v15H0Z" fill="#b8c9b4"/><path d="m139 104 34 41h48l24-27M173 145l-12 30m60-30 15 30m-85-20h78" stroke="#355b48" stroke-width="3" stroke-linecap="round"/><path d="m142 103 34 35h42l25-22" stroke="#f8f5e9" stroke-width="10" stroke-linecap="round"/><path d="M67 167V86m0 35C44 116 43 92 45 80c17 2 25 19 22 41Zm0 18c0-25 13-36 28-36 0 23-11 36-28 36Z" stroke="#55745b" stroke-width="2"/><path d="M300 92c5-6 10-6 15 0m0 0c4-6 9-6 14 0" stroke="#7b8a75" stroke-width="1.5" stroke-linecap="round"/></svg><span>少一点追赶，多一点生活。</span></div>
+</section>
+<section class="workspace" aria-label="生活预算计算器">
+<aside class="config card">
+ <div class="section-heading"><div><span class="step">01</span><h2>你的生活设想</h2></div><button type="button" id="reset" class="text-button">重置</button></div>
+ <p class="muted small">只改与你不同的选项，其余交给合理假设。</p>
+ <form id="calculator" novalidate>
+ <label class="field"><span>想住在哪座城市</span><div class="select-shell"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M10 18s6-6 6-11A6 6 0 0 0 4 7c0 5 6 11 6 11Z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><select id="city" name="city" aria-describedby="city-note"></select></div></label>
+ <p id="city-note" class="field-note">城市费用为规划假设，可在高级设置中改成实际开支。</p>
+ <div class="form-row"><label class="field"><span>你现在的年龄</span><div class="input-unit"><input name="age" type="number" value="30" min="18" max="85" step="1" required inputmode="numeric"><span>岁</span></div></label><label class="field"><span>一起生活的成人</span><select name="adults"><option value="1">一个人</option><option value="2">两个人</option></select></label></div>
+ <fieldset class="field"><legend>住房安排</legend><div class="segmented" data-for="housing"><button type="button" data-value="rent" aria-pressed="true">租房住</button><button type="button" data-value="own" aria-pressed="false">有房无贷</button><button type="button" data-value="mortgage" aria-pressed="false">还房贷</button></div><input type="hidden" name="housing" value="rent"></fieldset>
+ <div id="mortgage-fields" class="conditional form-row" hidden><label class="field"><span>每月房贷（元）</span><input name="mortgage" type="number" value="4000" min="0" max="100000" required></label><label class="field"><span>还要还多少年</span><input name="mortgageYears" type="number" value="20" min="0" max="40" required></label></div>
+ <label class="field"><span>关于孩子</span><select name="children"><option value="none">不计划养育孩子</option><option value="plan1">未来计划 1 个孩子</option><option value="plan2">未来计划 2 个孩子</option><option value="existing">已经有孩子</option></select></label>
+ <label id="existing-fields" class="field conditional" hidden><span>孩子现在几岁</span><input name="childAges" type="text" value="5" placeholder="多个孩子如：3，8" aria-describedby="kids-note"><small id="kids-note">最多 4 个，年龄 0～21 岁，用逗号分隔。</small></label>
+ <label id="birth-fields" class="field conditional" hidden><span>几年后迎来第一个孩子</span><div class="input-unit"><input name="birthAfter" type="number" value="3" min="0" max="15" required><span>年后</span></div><small>计划两个时，默认相隔 3 年；含生育一次性预算。</small></label>
+ <fieldset class="field"><legend>你想要的生活</legend><div class="lifestyle" data-for="lifestyle"><button type="button" data-value="lean" aria-pressed="false"><span>简简单单</span><small>做饭、少消费</small></button><button type="button" data-value="standard" aria-pressed="true"><span>舒服就好</span><small>日常有点余裕</small></button><button type="button" data-value="comfortable" aria-pressed="false"><span>自在一点</span><small>爱好、更多出游</small></button></div><input type="hidden" name="lifestyle" value="standard"></fieldset>
+ <details class="advanced"><summary>高级设置 <span>预算 · 利率 · 养老金</span><b aria-hidden="true">＋</b></summary><div class="advanced-inner">
+ <p class="small muted">不确定就保留默认值。金额均为当前价格；两位成人默认同龄，养老金和其他收入为全家合计。</p>
+ <div class="form-row"><label class="field"><span>规划到几岁</span><input name="endAge" type="number" value="95" min="19" max="110" required></label><label class="field"><span>年存款利率（%）</span><input name="rate" type="number" value="1" min="0" max="8" step="0.1" required></label></div>
+ <div class="form-row"><label class="field"><span>年生活通胀（%）</span><input name="inflation" type="number" value="2" min="0" max="10" step="0.1" required></label><label class="field"><span>年租金涨幅（%）</span><input name="rentInflation" type="number" value="2" min="0" max="10" step="0.1" required></label></div>
+ <label class="field"><span>年医疗、照护涨幅（%）</span><input name="medicalInflation" type="number" value="3" min="0" max="12" step="0.1" required></label>
+ <div class="form-row"><label class="field"><span>全家月生活费（元）</span><input name="monthlyLiving" type="number" placeholder="自动按城市估算" min="0" max="100000"><small>不含住房、医疗及孩子</small></label><label class="field"><span id="housing-label">全家月租金（元）</span><input name="monthlyHousing" type="number" placeholder="自动按城市估算" min="0" max="100000"><small id="housing-hint">有孩子或两人时适度增加面积</small></label></div>
+ <label class="field"><span>孩子教育路线</span><select name="education"><option value="public">公立为主 · 国内大学</option><option value="enriched">公立为主 · 更多课外投入</option><option value="private">高投入 · 民办 / 国际路线</option></select><small>教育与养育分开计算，支持到 22 岁前；无子女时不计费。</small></label>
+ <div class="form-row"><label class="field"><span>每人年医疗自付（元）</span><input name="medicalBase" type="number" value="2000" min="0" max="100000" required><small>45 岁起按年龄分档增加</small></label><label class="field"><span>每人年医保 / 保险（元）</span><input name="insurance" type="number" value="1200" min="0" max="100000" required><small>预算假设，不代表具体保费</small></label></div>
+ <div class="form-row"><label class="field"><span>每人应急医疗储备（元）</span><input name="reservePerAdult" type="number" value="100000" min="0" max="2000000" step="1000" required></label><label class="field"><span>80岁起每人年照护（元）</span><input name="careAnnual" type="number" value="18000" min="0" max="500000" step="1000" required></label></div>
+ <div class="form-row"><label class="field"><span>全家每月养老金（元）</span><input name="pension" type="number" value="0" min="0" max="50000" required></label><label class="field"><span>预计起领年龄</span><input name="pensionAge" type="number" value="65" min="40" max="85" required></label></div>
+ <p class="field-note">不推定领取资格。仅在你填入后扣减，按未来名义金额、不自动增长；基本养老金后续缴费未计入，请折算进开支。</p>
+ <div class="form-row"><label class="field"><span>全家每月其他净收入（元）</span><input name="income" type="number" value="0" min="0" max="100000" required><small>不含已计入的存款利息</small></label><label class="field"><span>其他收入持续年数</span><input name="incomeYears" type="number" value="10" min="0" max="92" required></label></div>
+ <label class="field"><span>每月赡养父母预算（元）</span><input name="parentSupport" type="number" value="0" min="0" max="100000" required><small>按通胀增长并持续全规划期；父母大额支出请另留储备。</small></label>
+ </div></details>
+ <p id="form-error" class="error" role="alert" hidden></p>
+ <div class="form-foot"><span class="live-dot"></span>修改即计算，不用填写资产或收入</div>
+ </form>
+</aside>
+<div class="results"><div id="result-error" class="card error-panel" hidden><h2>再完善一下输入</h2><p id="result-error-text"></p><p class="muted">修正后会自动重新计算。</p></div><div id="dashboard">
+ <section class="result-main" aria-live="polite" aria-atomic="true">
+  <div class="result-top"><span class="pill"><span class="live-dot"></span>从现在起，不依赖工作收入</span><span id="location-tag">杭州 · 一个人</span></div>
+  <p class="result-label">你需要准备的可支配本金，约</p>
+  <div class="capital-number"><span class="yen">¥</span><strong id="total">—</strong><span class="wan">万</span></div>
+  <p id="result-context" class="result-context"></p>
+  <div class="result-stats"><div><span>当前月均开销</span><strong id="monthly">—</strong></div><div><span>其中独立应急储备</span><strong id="reserve">—</strong></div><div><span>低利率、高通胀情景</span><strong id="stress">—</strong></div></div>
+  <p class="result-warning" id="rate-warning"></p>
+ </section>
+ <div class="result-caption"><span>不是“只花利息”：允许逐年消耗本金，测算至规划终点。</span><button class="text-button" type="button" id="export">导出测算 <span aria-hidden="true">↓</span></button></div>
+ <section class="card chart-card"><div class="section-heading"><div><span class="step">02</span><h2>让这笔钱，陪你慢慢生活</h2></div><div class="chart-switch" aria-label="资产显示口径"><button type="button" data-chart="real" aria-pressed="true">今天购买力</button><button type="button" data-chart="balance" aria-pressed="false">账面金额</button></div></div><p class="muted small">日常资金的逐年余额，不含独立应急储备；曲线并非投资回报预测。</p><div id="chart" class="chart" role="img" aria-label="逐年生活资金余额"></div><div class="chart-legend"><span><i></i>基础情景 · 预计余额</span><span id="chart-end"></span></div><div class="milestones" id="milestones"></div></section>
+ <section class="card breakdown-card"><div class="section-heading"><div><span class="step">03</span><h2>自由的价格，花在哪里</h2></div><span class="small muted">折算为今天需备本金</span></div><div class="stacked-bar" id="stacked-bar" aria-hidden="true"></div><div id="breakdown" class="breakdown"></div><div id="income-offset" class="income-offset" hidden></div><p class="small muted">不是未来名义开支直接相加：已用设定利率折现，并单列储备。</p></section>
+ <section class="city-compare"><div class="section-heading"><div><span class="step">04</span><h2>换一座城，也许是另一种答案</h2></div></div><p class="small muted">保持其余选择不变，比较城市默认预算；自填生活费、住房费会在此比较中暂时恢复为城市估算。</p><div class="compare-grid" id="compare"></div></section>
+</div></div>
+</section>
+<section class="method card" id="method"><div class="method-intro"><p class="eyebrow">关于这笔账</p><h2>假设公开，<br>答案才有意义。</h2><p>这里的“躺平”是：不依赖劳动收入，维持你选择的生活。不是生存底线，也不是财富承诺。</p></div><div class="method-content">
+ <details open><summary>怎么算？不是“年开销 × 25”</summary><p>按每一年实际年龄计算生活、住房、医疗、养育、教育和照护，分别叠加通胀；扣除该年可靠收入，再按名义存款利率折现。支出按年初支付，剩余资金按年计息。超额收入不累积，保守地将当年缺口最低记为 0。</p><div class="formula">需备本金 = Σ 当年收支缺口 ÷ (1 + 年利率)<sup>距今年数</sup> + 独立储备</div><p>基础情景规划到 95 岁（可改），终点允许日常本金用完，不要求保本或留遗产；不保障活过规划终点。医疗储备加半年日常开支单独留存，不计利息、不用来支付模型中的日常费用。</p></details>
+ <details><summary>住房、孩子和医疗，具体假设是什么？</summary><p>住房默认租住非核心区普通住房，两位成人或有孩子时，租金乘 1.4；自住房默认每月 500 元 × 城市系数用于物业维修，还贷者在此基础上加剩余月供。未计购房首付、购房款和房产出售收入；自住房不能重复算为可支配本金。</p><p>每人每年预留医保及保险 1,200 元、医疗自付 2,000 元；医疗自付在 45 / 60 / 75 岁起分别为基础的 1.6 / 3 / 5 倍。80 岁起另加每人每年 18,000 元照护预算，医疗、照护默认每年涨 3%。这些是模型假设，不是保费报价或精算预测，需自行确认参保资格与保障范围。</p><p>计划孩子默认 3 年后出生，二孩再隔 3 年；每胎一次性生育预算 3 万元。每个孩子按 0～2 / 3～5 / 6～11 / 12～17 / 18～21 岁分别计年养育费 2.4 / 1.8 / 1.2 / 1.8 / 1.8 万元；公立路线另计年教育费 0 / 1.2 / 0.4 / 0.7 / 1.5 万元，再乘城市系数和通胀。课外高投入为公立教育费的 2.5 倍；民办 / 国际路线各学段采用更高预算，但不保证覆盖留学。孩子费用不重复计入成人生活费，22 岁起停止支持。已有与未来孩子暂不混合建模。</p><p>两位成人默认同龄，生活费为单人的 1.75 倍；医疗、照护与应急医疗储备为两份。生活档位只调整成人生活费，比例为 0.8 / 1 / 1.4。未自动计入养车、灵活就业养老缴费、买房及父母大额医疗，需自行加到生活费、赡养预算或应急储备。</p></details>
+ <details><summary>城市数据和利率从哪里来？</summary><p><strong>城市开销全部是本工具的规划假设，非实时行情，也非官方城市均值。</strong>默认按普通非核心区居住、公共交通、无车估算。高级设置可以直接替换全家月生活费及住房费；切换城市会清空这两项自填费用，避免误用旧城市开支。</p><p>默认名义年利率 1%、生活与租金通胀 2%、医疗通胀 3%，均为长期情景参数，不代表未来预测或能锁定几十年的存款产品。作为量级参考，工商银行官网所列 2025-05-20 调整的整存整取一年期挂牌利率为 0.95%；国家统计局公布 2025 年城镇居民人均消费支出 35,869 元，但该全国均值不是本工具的城市费用来源。</p><p>压力情景将生活、租金及医疗涨幅各提高 1 个百分点，将利率降低 0.5 个百分点（最低为 0）；这是敏感性比较，不是置信区间、最坏情况或保证安全线。所有来源核对于 2026-11-16，模型长期利率仍是可修改假设。</p><div class="source-links"><a href="https://www.icbc.com.cn/ICBC/个人金融/存款/定期存款/整存整取.htm" target="_blank" rel="noopener noreferrer">工商银行 · 挂牌利率 ↗</a><a href="https://www.stats.gov.cn/sj/zxfb/202601/t20260119_1962321.html" target="_blank" rel="noopener noreferrer">国家统计局 · 居民收支 ↗</a></div></details>
+ <details><summary>还有什么不确定？</summary><p>不是投资建议，也不是退休资格判断。模型未模拟投资波动、利率路径、极端疾病、意外、税制变化或生育停工机会成本。重大支出可能超出储备，保险也不等于全额报销；低利率长期滚存可能显著落后于通胀。建议用真实开支替换默认值，并定期复算，而不是仅凭本页辞职。</p></details>
+</div></section>
+<footer><span class="footer-brand">松弛有数. <span>把时间还给自己。</span></span><a href="https://github.com/nullxjx/slow-life-calculator" target="_blank" rel="noopener noreferrer">查看源码 ↗</a><span>不收集个人数据 · 非投资建议</span></footer>
+</main><script type="module" src="./app.js"></script>
+</body></html>
